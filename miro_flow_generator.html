@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miro Flow Generator — TBC UZ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f6;min-height:100vh;padding:2rem 1rem;color:#1a1a2e}
+.container{max-width:680px;margin:0 auto}
+.header{text-align:center;margin-bottom:1.75rem}
+.header h1{font-size:21px;font-weight:600;color:#024a56}
+.header p{font-size:13px;color:#777;margin-top:5px}
+.card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:1.4rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.section-title{font-size:11px;font-weight:600;color:#aaa;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{margin-bottom:0}
+.field label{display:block;font-size:13px;font-weight:500;color:#444;margin-bottom:5px}
+.field input{width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;font-family:inherit;color:#1a1a2e;outline:none;transition:border-color .15s,box-shadow .15s}
+.field input:focus{border-color:#00c0c9;box-shadow:0 0 0 3px rgba(0,192,201,.12)}
+.hint{font-size:11px;color:#aaa;margin-top:4px;line-height:1.5}
+.hint a{color:#00c0c9;text-decoration:none}
+.hint a:hover{text-decoration:underline}
+.hint strong{color:#555}
+.legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:10px 13px;background:#f8fafc;border-radius:8px;border:1px solid #e9eef2;margin-bottom:14px}
+.leg{display:flex;align-items:center;gap:6px;font-size:11px;color:#666}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.step-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.add-btn{padding:7px 15px;font-size:12px;font-weight:600;border-radius:20px;cursor:pointer;border:1.5px solid;transition:all .15s;font-family:inherit}
+.add-btn:hover{transform:translateY(-1px)}
+.add-btn.wait{border-color:#8ec63e;color:#2f5a08;background:#f3fce0}
+.add-btn.push{border-color:#00c0c9;color:#003d40;background:#e0f8fa}
+.add-btn.sms{border-color:#04d396;color:#01382a;background:#e0faf3}
+.add-btn.email{border-color:#1fc3f3;color:#012e3d;background:#e2f7fd}
+.add-btn.decision{border-color:#ff31ac;color:#6b0044;background:#ffe5f3}
+.add-btn.cg{border-color:#4a9aaa;color:#024a56;background:#e0f4f7}
+.add-btn.clock{border-color:#888;color:#333;background:#f5f5f5}
+.steps-list{display:flex;flex-direction:column;gap:8px;min-height:56px}
+.empty-state{text-align:center;padding:1.5rem;color:#ccc;font-size:13px;border:1.5px dashed #e5e7eb;border-radius:10px}
+.step-card{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:10px;border:1.5px solid;cursor:default}
+.drag-handle{cursor:grab;color:#ccc;font-size:14px;flex-shrink:0;user-select:none}
+.drag-handle:hover{color:#999}
+.step-card.dragging{opacity:0.4}
+.step-card.wait{border-color:#b8dc70;background:#f7fdef}
+.step-card.push{border-color:#80dfe2;background:#f0fdfe}
+.step-card.sms{border-color:#6ddeb8;background:#f0fdf8}
+.step-card.email{border-color:#80dbf5;background:#f0fbfe}
+.step-card.decision{border-color:#ff7fce;background:#fff5fa}
+.step-card.cg{border-color:#4a9aaa;background:#edf7f9}
+.cg .step-badge{background:#4a9aaa;color:#fff}
+.step-card.clock{border-color:#aaa;background:#f9f9f9}
+.clock .step-badge{background:#888;color:#fff}
+.step-num{font-size:11px;font-weight:600;color:#bbb;min-width:18px;text-align:right}
+.step-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;min-width:68px;text-align:center;white-space:nowrap}
+.wait .step-badge{background:#8ec63e;color:#1a3008}
+.push .step-badge{background:#00c0c9;color:#002e30}
+.sms .step-badge{background:#04d396;color:#013828}
+.email .step-badge{background:#1fc3f3;color:#012e3d}
+.decision .step-badge{background:#ff31ac;color:#fff}
+.step-input{flex:1;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;font-family:inherit;outline:none;background:#fff}
+.step-input:focus{border-color:#00c0c9}
+.step-remove{background:none;border:none;cursor:pointer;color:#ccc;font-size:20px;line-height:1;padding:1px 4px;transition:color .1s}
+.step-remove:hover{color:#e24a4a}
+.pct-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.pct-input{width:52px;padding:5px 6px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;font-family:inherit;outline:none;text-align:center}
+.pct-input:focus{border-color:#4a9aaa}
+.pct-label{font-size:12px;color:#4a9aaa;font-weight:600;white-space:nowrap}
+.gen-btn{width:100%;padding:13px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;background:#024a56;color:#fff;border:none;border-radius:10px;transition:background .15s,transform .1s;letter-spacing:.02em;margin-top:.5rem}
+.gen-btn:hover:not(:disabled){background:#035f70;transform:translateY(-1px)}
+.gen-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.log{margin-top:1rem;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}
+.log-hdr{padding:8px 14px;font-size:11px;font-weight:600;background:#f9fafb;border-bottom:1px solid #e5e7eb;color:#aaa;letter-spacing:.07em;text-transform:uppercase}
+.ls{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f3f4f6;font-size:13px;color:#bbb}
+.ls:last-child{border-bottom:none}
+.ls.active{color:#1a1a2e}
+.ls.done{color:#059669}
+.ls.error{color:#dc2626}
+.dot{width:8px;height:8px;border-radius:50%;background:#d1d5db;flex-shrink:0}
+.active .dot{background:#00c0c9;animation:pulse 1s ease-in-out infinite}
+.done .dot{background:#04d396}
+.error .dot{background:#dc2626}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+.banner{margin-top:1rem;padding:13px 16px;border-radius:10px;font-size:13px;line-height:1.6}
+.banner.ok{background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46}
+.banner.err{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b}
+
+/* CORS warning */
+.cors-warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.cors-warn h3{font-size:14px;font-weight:600;color:#92400e;margin-bottom:8px}
+.cors-warn p{font-size:13px;color:#78350f;line-height:1.6;margin-bottom:10px}
+.cors-warn ol{font-size:13px;color:#78350f;line-height:1.8;padding-left:1.2rem}
+.cors-warn ol li{margin-bottom:4px}
+.copy-cmd{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #fcd34d;border-radius:8px;padding:8px 12px;margin:10px 0}
+.copy-cmd code{flex:1;font-size:12px;color:#1a1a2e;font-family:monospace;word-break:break-all}
+.copy-btn{padding:5px 12px;font-size:12px;font-weight:600;background:#f59e0b;color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.copy-btn:hover{background:#d97706}
+.cors-warn .url{font-family:monospace;font-size:12px;background:#fff;padding:4px 8px;border-radius:4px;border:1px solid #fcd34d;color:#024a56}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Miro Campaign Flow Generator</h1>
+    <p>Build your campaign steps, click Generate — the flow appears on your Miro board.</p>
+  </div>
+
+  <!-- CORS warning — shown only when running from file:// -->
+  <div class="cors-warn" id="corsWarn" style="display:none">
+    <h3>⚠️ One quick setup step needed</h3>
+    <p>Browsers block API calls from local files. You need a local server. Try Option 1 first — if it doesn't work, use Option 2.</p>
+
+    <p style="margin-top:10px"><strong>Option 1 — Node.js (paste in cmd):</strong></p>
+    <div class="copy-cmd">
+      <code>npx --yes http-server "%USERPROFILE%\Downloads" -p 8080 --cors</code>
+      <button class="copy-btn" onclick="copyToClipboard(this,'npx --yes http-server &quot;%USERPROFILE%\\Downloads&quot; -p 8080 --cors')">Copy</button>
+    </div>
+
+    <p style="margin-top:10px"><strong>Option 2 — Python (paste in cmd):</strong></p>
+    <div class="copy-cmd">
+      <code>python -m http.server 8080 --directory "%USERPROFILE%\Downloads"</code>
+      <button class="copy-btn" onclick="copyToClipboard(this,'python -m http.server 8080 --directory &quot;%USERPROFILE%\\Downloads&quot;')">Copy</button>
+    </div>
+
+    <ol style="margin-top:10px">
+      <li>Open <strong>Windows Search</strong> → type <strong>cmd</strong> → Enter</li>
+      <li>Paste one of the commands above and press Enter — wait until it says "Available on..."</li>
+      <li>Open a new tab and go to: <span class="url">http://localhost:8080/miro_flow_generator.html</span></li>
+      <li>Use the tool from that tab — this warning will be gone ✓</li>
+    </ol>
+    <p style="margin-top:8px;font-size:12px;color:#a16207">Keep the cmd window open while using the tool. If neither command works, <a href="https://nodejs.org/en/download" target="_blank" style="color:#b45309">install Node.js</a> (takes 2 min), then use Option 1.</p>
+  </div>
+
+  <!-- Token setup help -->
+  <div class="card">
+    <div class="section-title">Miro connection</div>
+    <div class="row2">
+      <div class="field">
+        <label>Access token</label>
+        <input type="password" id="miroToken" placeholder="eyJtaXJvLm9…">
+        <div class="hint">
+          1. Go to <a href="https://miro.com/app/settings/user-profile/apps" target="_blank">Miro → Settings → Apps</a> → open your Dev App<br>
+          2. Scroll to Permissions → check <strong>boards:read</strong> and <strong>boards:write</strong><br>
+          3. Click the blue <strong>"Install app and get OAuth token"</strong> button<br>
+          4. Copy the token from the page that appears
+        </div>
+      </div>
+      <div class="field">
+        <label>Board ID</label>
+        <input type="text" id="boardId" placeholder="uXjVKxxxxxxxx">
+        <div class="hint">Last part of your board URL:<br>miro.com/app/board/<strong>uXjVK…</strong>/</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Campaign</div>
+    <div class="row2">
+      <div class="field">
+        <label>Campaign name <span style="font-size:10px;color:#aaa">(Miro frame title)</span></label>
+        <input type="text" id="campaignName" placeholder="RBDS Osmon — Credit Card">
+      </div>
+      <div class="field">
+        <label>Segment name <span style="font-size:10px;color:#aaa">(cylinder label)</span></label>
+        <input type="text" id="segmentName" placeholder="e.g. BCL-RBDS">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+      <input type="checkbox" id="reEnterEnabled" style="width:16px;height:16px;cursor:pointer">
+      <label for="reEnterEnabled" style="font-size:13px;color:#444;cursor:pointer">Re-enter campaign after</label>
+      <input type="number" id="reEnterDays" value="30" min="1" style="width:64px;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;font-family:inherit;outline:none">
+      <span style="font-size:13px;color:#444">days</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Build your flow</div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:#321a68"></div>Trigger (auto)</div>
+      <div class="leg"><div class="leg-dot" style="background:#8ec63e"></div>Wait</div>
+      <div class="leg"><div class="leg-dot" style="background:#ff31ac"></div>Decision → Yes exits, No continues</div>
+      <div class="leg"><div class="leg-dot" style="background:#00c0c9"></div>Push</div>
+      <div class="leg"><div class="leg-dot" style="background:#04d396"></div>SMS</div>
+      <div class="leg"><div class="leg-dot" style="background:#1fc3f3"></div>Email</div>
+      <div class="leg"><div class="leg-dot" style="background:#888"></div>Clock window</div>
+      <div class="leg"><div class="leg-dot" style="background:#4a9aaa"></div>CG (splits traffic)</div>
+      <div class="leg"><div class="leg-dot" style="background:#024a56"></div>End (auto)</div>
+    </div>
+    <div class="step-btns">
+      <button class="add-btn wait"     onclick="addStep('wait')">+ Wait</button>
+      <button class="add-btn clock"    onclick="addStep('clock')">+ Clock</button>
+      <button class="add-btn push"     onclick="addStep('push')">+ Push</button>
+      <button class="add-btn sms"      onclick="addStep('sms')">+ SMS</button>
+      <button class="add-btn email"    onclick="addStep('email')">+ Email</button>
+      <button class="add-btn decision" onclick="addStep('decision')">+ Decision</button>
+      <button class="add-btn cg"       onclick="addStep('cg')">+ CG</button>
+    </div>
+    <div class="steps-list" id="stepsList">
+      <div class="empty-state">Add steps above to build your campaign flow</div>
+    </div>
+  </div>
+
+  <button class="gen-btn" id="genBtn" onclick="generate()">Generate flow in Miro ↗</button>
+
+  <div class="log" id="logBox" style="display:none">
+    <div class="log-hdr">Generation log</div>
+    <div class="ls" id="s1"><div class="dot"></div><span>Creating nodes in Miro</span></div>
+    <div class="ls" id="s2"><div class="dot"></div><span>Connecting arrows</span></div>
+  </div>
+
+  <div id="bannerArea"></div>
+
+</div>
+
+<script>
+if(location.protocol==='file:') document.getElementById('corsWarn').style.display='block';
+
+// Load saved values on startup
+window.addEventListener('DOMContentLoaded',()=>{
+  ['miroToken','boardId','campaignName','segmentName'].forEach(id=>{
+    const saved=localStorage.getItem('mfg_'+id);
+    if(saved) document.getElementById(id).value=saved;
+  });
+});
+
+// Auto-save on change
+['miroToken','boardId','campaignName','segmentName'].forEach(id=>{
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById(id).addEventListener('input',e=>{
+      localStorage.setItem('mfg_'+id,e.target.value);
+    });
+  });
+});
+
+function copyToClipboard(btn,text){
+  navigator.clipboard.writeText(text).then(()=>{const o=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,2000);});
+}
+
+const PLACEHOLDERS={wait:'e.g. Wait 1 day',clock:'e.g. 10:00 – 20:00',push:'e.g. Push #1',sms:'e.g. SMS #1',email:'e.g. Email #1',decision:'e.g. Application completed? (Yes = exit)',cg:'CG label (optional)'};
+const TYPE_LABELS={wait:'Wait',clock:'Clock',push:'Push',sms:'SMS',email:'Email',decision:'Decision',cg:'CG'};
+let steps=[],stepCounter=0,dragId=null;
+
+function addStep(type){steps.push({id:++stepCounter,type,label:'',text:'',pct:20});renderSteps();}
+function removeStep(id){steps=steps.filter(s=>s.id!==id);renderSteps();}
+function updateLabel(id,val){const s=steps.find(s=>s.id===id);if(s)s.label=val;}
+function updateText(id,val){const s=steps.find(s=>s.id===id);if(s)s.text=val;}
+function updatePct(id,val){const s=steps.find(s=>s.id===id);if(s)s.pct=parseInt(val)||20;}
+function onDragStart(e,id){dragId=id;setTimeout(()=>{const el=document.querySelector(`[data-id="${id}"]`);if(el)el.classList.add('dragging');},0);}
+function onDragOver(e,id){e.preventDefault();if(dragId===id)return;}
+function onDrop(e,id){
+  e.preventDefault();
+  if(dragId===null||dragId===id)return;
+  const fi=steps.findIndex(s=>s.id===dragId);
+  const ti=steps.findIndex(s=>s.id===id);
+  const [moved]=steps.splice(fi,1);
+  steps.splice(ti,0,moved);
+  dragId=null;
+  renderSteps();
+}
+function onDragEnd(){dragId=null;document.querySelectorAll('.step-card').forEach(el=>el.classList.remove('dragging'));}
+
+function renderSteps(){
+  const list=document.getElementById('stepsList');
+  if(!steps.length){list.innerHTML='<div class="empty-state">Add steps above to build your campaign flow</div>';return;}
+  list.innerHTML=steps.map((s,i)=>{
+    const isCG=s.type==='cg';
+    const hasMsg=s.type==='push'||s.type==='sms';
+    return `<div class="step-card ${s.type}" data-id="${s.id}" draggable="true"
+      ondragstart="onDragStart(event,${s.id})" ondragover="onDragOver(event,${s.id})"
+      ondrop="onDrop(event,${s.id})" ondragend="onDragEnd()">
+      <span class="drag-handle">⠿</span>
+      <span class="step-num">${i+1}</span>
+      <span class="step-badge">${TYPE_LABELS[s.type]}</span>
+      ${isCG
+        ?`<div class="pct-wrap"><input class="pct-input" type="number" min="1" max="99" value="${s.pct}" oninput="updatePct(${s.id},this.value)"><span class="pct-label">% → CG</span></div>`
+        :`<div style="flex:1;display:flex;flex-direction:column;gap:4px">
+            <input class="step-input" type="text" placeholder="${PLACEHOLDERS[s.type]}" value="${s.label.replace(/"/g,'&quot;')}" oninput="updateLabel(${s.id},this.value)">
+            ${hasMsg?`<input class="step-input" type="text" placeholder="Message text (optional)" value="${(s.text||'').replace(/"/g,'&quot;')}" oninput="updateText(${s.id},this.value)" style="font-size:12px;color:#666">`:``}
+          </div>`}
+      <button class="step-remove" onclick="removeStep(${s.id})">×</button>
+    </div>`;
+  }).join('');
+}
+
+const T='#92CDD3',TD='#4a9aaa';
+
+const SVGS={
+  trigger:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 95"><ellipse cx="40" cy="13" rx="34" ry="11" fill="${T}" stroke="${TD}" stroke-width="2"/><rect x="6" y="13" width="68" height="69" fill="${T}" stroke="none"/><line x1="6" y1="13" x2="6" y2="82" stroke="${TD}" stroke-width="2"/><line x1="74" y1="13" x2="74" y2="82" stroke="${TD}" stroke-width="2"/><ellipse cx="40" cy="82" rx="34" ry="11" fill="#7ab8bf" stroke="${TD}" stroke-width="2"/></svg>`,
+  wait:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 88"><rect x="4" y="2" width="62" height="7" rx="2" fill="${TD}"/><rect x="4" y="79" width="62" height="7" rx="2" fill="${TD}"/><polygon points="4,9 66,9 35,46 66,79 4,79 35,46" fill="${T}" stroke="${TD}" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+  clock:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="white" stroke="#aaaaaa" stroke-width="2.5"/><circle cx="40" cy="40" r="26" fill="${T}" stroke="${TD}" stroke-width="1.5"/><line x1="40" y1="40" x2="40" y2="20" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/><line x1="40" y1="40" x2="54" y2="49" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/><circle cx="40" cy="40" r="2.5" fill="#1a1a1a"/></svg>`,
+  push:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95 60"><rect x="5" y="5" width="85" height="50" rx="9" fill="${T}" stroke="${TD}" stroke-width="2"/></svg>`,
+  sms:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95 80"><rect x="5" y="4" width="85" height="54" rx="9" fill="${T}" stroke="${TD}" stroke-width="2"/><polygon points="14,56 5,76 36,56" fill="${T}" stroke="${TD}" stroke-width="2" stroke-linejoin="round"/></svg>`,
+  email:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95 72"><rect x="4" y="4" width="87" height="64" rx="4" fill="${T}" stroke="${TD}" stroke-width="2"/><polyline points="4,7 47.5,40 91,7" fill="none" stroke="${TD}" stroke-width="2.5" stroke-linejoin="round"/></svg>`,
+  cg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 80"><rect x="18" y="8" width="104" height="64" fill="${T}" stroke="none"/><line x1="18" y1="8" x2="122" y2="8" stroke="${TD}" stroke-width="2"/><line x1="18" y1="72" x2="122" y2="72" stroke="${TD}" stroke-width="2"/><ellipse cx="18" cy="40" rx="14" ry="32" fill="#7ab8bf" stroke="${TD}" stroke-width="2"/><ellipse cx="122" cy="40" rx="14" ry="32" fill="${T}" stroke="${TD}" stroke-width="2"/></svg>`,
+};
+
+const DIMS={
+  trigger:{w:80,h:95}, wait:{w:70,h:88}, clock:{w:80,h:80},
+  push:{w:95,h:60}, sms:{w:95,h:80}, email:{w:95,h:72},
+  cg:{w:140,h:80}, decision:{w:160,h:100},
+};
+
+async function svgToPng(svgStr,w,h){
+  return new Promise((res,rej)=>{
+    const canvas=document.createElement('canvas');
+    canvas.width=w*2;canvas.height=h*2;
+    const ctx=canvas.getContext('2d');
+    const img=new Image();
+    const blob=new Blob([svgStr],{type:'image/svg+xml'});
+    const url=URL.createObjectURL(blob);
+    img.onload=()=>{ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);canvas.toBlob(res,'image/png');};
+    img.onerror=rej;
+    img.src=url;
+  });
+}
+
+function ls(id,state,text){const el=document.getElementById(id);el.className='ls '+state;if(text)el.querySelector('span').textContent=text;}
+function banner(type,msg){document.getElementById('bannerArea').innerHTML=`<div class="banner ${type}">${msg}</div>`;}
+
+async function mkFrame(token,boardId,title,x,y,w,h){
+  const r=await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/frames`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({data:{title,format:'custom',type:'freeform'},position:{x,y},geometry:{width:w,height:h}})
+  });
+  if(!r.ok){console.warn('Frame failed:',await r.text());return null;}
+  return(await r.json()).id;
+}
+
+async function mkIcon(token,boardId,type,label,x,y,frameId,msgText){
+  const dims=DIMS[type];
+  const png=await svgToPng(SVGS[type],dims.w,dims.h);
+  const fd=new FormData();
+  fd.append('resource',png,'icon.png');
+  fd.append('data',JSON.stringify({position:{x,y},geometry:{width:dims.w},...(frameId?{parent:{id:frameId}}:{})}));
+  const r=await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/images`,{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+  if(!r.ok){const e=await r.text();throw new Error(`Node ${r.status}: ${e.substring(0,200)}`);}
+  const item=await r.json();
+  const labelY=(msgText&&(type==='push'||type==='sms'))?y-dims.h/2-16:y+dims.h/2+14;
+  await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/texts`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({data:{content:label},style:{textAlign:'center',fontSize:'12',color:'#333333',fontFamily:'arial'},position:{x,y:labelY},geometry:{width:dims.w+40},...(frameId?{parent:{id:frameId}}:{})})
+  });
+  if(msgText&&(type==='push'||type==='sms')){
+    await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/texts`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({data:{content:msgText},style:{textAlign:'left',fontSize:'11',color:'#555555',fontFamily:'arial'},position:{x,y:y+dims.h/2+14},geometry:{width:180},...(frameId?{parent:{id:frameId}}:{})})
+    });
+  }
+  return item.id;
+}
+
+async function mkDecision(token,boardId,label,x,y,frameId){
+  const d=DIMS.decision;
+  const r=await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/shapes`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({data:{shape:'rhombus',content:label},style:{fillColor:'#92CDD3',fillOpacity:'1',borderColor:'#1A1A1A',borderOpacity:'0.7',borderWidth:'1',color:'#1a1a1a',textAlign:'center',textAlignVertical:'middle',fontSize:'13',fontFamily:'arial'},position:{x,y},geometry:{width:d.w,height:d.h},...(frameId?{parent:{id:frameId}}:{})})
+  });
+  if(!r.ok){const e=await r.text();throw new Error(`Decision ${r.status}: ${e.substring(0,200)}`);}
+  return(await r.json()).id;
+}
+
+async function mkCircle(token,boardId,label,x,y,frameId){
+  const r=await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/shapes`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({data:{shape:'circle',content:label},style:{fillColor:'#92CDD3',fillOpacity:'1',borderColor:'#1A1A1A',borderOpacity:'1',borderWidth:'3',color:'#333333',textAlign:'center',textAlignVertical:'middle',fontSize:'11',fontFamily:'arial'},position:{x,y},geometry:{width:58,height:58},...(frameId?{parent:{id:frameId}}:{})})
+  });
+  if(!r.ok){const e=await r.text();throw new Error(`Circle ${r.status}: ${e.substring(0,200)}`);}
+  return(await r.json()).id;
+}
+
+async function mkCylinder(token,boardId,label,x,y,frameId){
+  const r=await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/shapes`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({data:{shape:'can',content:label},style:{fillColor:'#92CDD3',fillOpacity:'1',borderColor:'#1A1A1A',borderOpacity:'0.6',borderWidth:'2',color:'#1a1a1a',textAlign:'center',textAlignVertical:'middle',fontSize:'13',fontFamily:'arial'},position:{x,y},geometry:{width:100,height:110},...(frameId?{parent:{id:frameId}}:{})})
+  });
+  if(!r.ok){const e=await r.text();throw new Error(`Cylinder ${r.status}: ${e.substring(0,200)}`);}
+  return(await r.json()).id;
+}
+
+async function mkConn(token,boardId,fromId,toId,label,dashed=false){
+  const r=await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/connectors`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({startItem:{id:fromId},endItem:{id:toId},style:{endStrokeCap:'rounded_stealth',startStrokeCap:'none',strokeColor:'#1A1A1A',strokeWidth:'2.0',strokeStyle:dashed?'dashed':'normal'},shape:dashed?'curved':'elbowed',...(label?{captions:[{content:label,position:'50%'}]}:{})})
+  });
+  if(!r.ok){const e=await r.text();throw new Error(`Arrow ${r.status}: ${e.substring(0,300)}`);}
+}
+
+async function inspectArrow(){
+  const token=document.getElementById('miroToken').value.trim();
+  const boardId=document.getElementById('boardId').value.trim();
+  if(!token||!boardId){alert('Paste your token and board ID first.');return;}
+  const r=await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/connectors?limit=50`,{
+    headers:{'Authorization':'Bearer '+token}
+  });
+  if(!r.ok){alert('Failed: '+r.status);return;}
+  const data=await r.json();
+  if(!data.data||!data.data.length){alert('No connectors found on the board.');return;}
+  const lines=data.data.map(c=>`endStrokeCap: ${c.style?.endStrokeCap||'?'} | startStrokeCap: ${c.style?.startStrokeCap||'?'} | shape: ${c.shape||'?'}`);
+  alert('Connectors found:\n\n'+lines.join('\n'));
+}
+
+async function generate(){
+  const token=document.getElementById('miroToken').value.trim();
+  const boardId=document.getElementById('boardId').value.trim();
+  const campaignName=document.getElementById('campaignName').value.trim()||'Campaign Flow';
+  const segmentName=document.getElementById('segmentName').value.trim()||'Segment';
+  if(!token||!boardId){alert('Please enter your Miro token and Board ID.');return;}
+  if(!steps.length){alert('Please add at least one step.');return;}
+
+  document.getElementById('genBtn').disabled=true;
+  document.getElementById('logBox').style.display='block';
+  document.getElementById('bannerArea').innerHTML='';
+  ls('s1','');ls('s2','');
+
+  try{
+    ls('s1','active');
+
+    const reEnter=document.getElementById('reEnterEnabled').checked;
+    const reEnterDays=document.getElementById('reEnterDays').value||30;
+
+    // Build allNodes
+    const allNodes=[{key:'trigger',type:'trigger',label:segmentName}];
+    steps.forEach((s,i)=>{
+      const key='s'+s.id;
+      const label=s.label||(TYPE_LABELS[s.type]+' #'+(i+1));
+      if(s.type==='cg'){
+        allNodes.push({key,type:'cg',label,pct:s.pct||20,isCG:true});
+        allNodes.push({key:key+'_cgexit',type:'exit',label:'',isCGExit:true,parentCG:key});
+      } else{
+        allNodes.push({key,type:s.type,label,msgText:s.text||''});
+        if(s.type==='decision') allNodes.push({key:key+'_exit',type:'exit',label:'Exit',isExit:true});
+      }
+    });
+    allNodes.push({key:'end',type:'end',label:'End'});
+
+    // Layout
+    const SX=320,MY=300,EXIT_Y=100,CG_Y=520,PAD=150;
+    const mainPath=allNodes.filter(n=>!n.isExit&&!n.isCGExit&&!n.isCG);
+    const pos={};
+    mainPath.forEach((n,i)=>{
+      pos[n.key]={x:100+i*SX,y:MY};
+      if(n.type==='decision') pos[n.key+'_exit']={x:100+i*SX,y:EXIT_Y};
+    });
+    allNodes.forEach((n,idx)=>{
+      if(n.isCG){
+        const pred=allNodes.slice(0,idx).reverse().find(m=>!m.isCG&&!m.isExit&&!m.isCGExit);
+        const succ=allNodes.slice(idx+1).find(m=>!m.isCG&&!m.isExit&&!m.isCGExit);
+        const px=pred&&pos[pred.key]?pos[pred.key].x:100;
+        const sx=succ&&pos[succ.key]?pos[succ.key].x:px+SX;
+        pos[n.key]={x:(px+sx)/2,y:CG_Y};
+      }
+      if(n.isCGExit){
+        const cgPos=pos[n.parentCG];
+        if(cgPos) pos[n.key]={x:cgPos.x+160,y:CG_Y};
+      }
+    });
+
+    // Compute frame bounds
+    const allX=Object.values(pos).map(p=>p.x);
+    const allY=Object.values(pos).map(p=>p.y);
+    const frameX=Math.min(...allX)-PAD;
+    const frameY=Math.min(...allY)-PAD;
+    const frameW=Math.max(...allX)-frameX+PAD*2;
+    const frameH=Math.max(...allY)-frameY+PAD*2;
+
+    // Create frame first
+    const frameId=await mkFrame(token,boardId,campaignName,frameX+frameW/2,frameY+frameH/2,frameW,frameH);
+
+    // Create nodes
+    const ids={};
+    for(const node of allNodes){
+      const p=pos[node.key]||{x:100,y:300};
+      if(node.type==='decision') ids[node.key]=await mkDecision(token,boardId,node.label,p.x,p.y,frameId);
+      else if(node.type==='trigger') ids[node.key]=await mkCylinder(token,boardId,node.label,p.x,p.y,frameId);
+      else if(node.type==='exit'||node.type==='end') ids[node.key]=await mkCircle(token,boardId,node.label,p.x,p.y,frameId);
+      else ids[node.key]=await mkIcon(token,boardId,node.type,node.label,p.x,p.y,frameId,node.msgText||'');
+    }
+    ls('s1','done',`${allNodes.length} nodes placed on board`);
+
+    // Create connectors
+    ls('s2','active');
+    let cc=0;
+    const connNodes=allNodes.filter(n=>!n.isExit&&!n.isCGExit);
+    for(let i=0;i<connNodes.length-1;i++){
+      const cur=connNodes[i],nxt=connNodes[i+1];
+      if(cur.type==='decision'){
+        await mkConn(token,boardId,ids[cur.key],ids[cur.key+'_exit'],'Yes');
+        if(nxt.isCG){
+          const afterCG=connNodes[i+2];
+          const cgPct=nxt.pct||20;
+          await mkConn(token,boardId,ids[cur.key],ids[nxt.key],cgPct+'% CG');
+          if(afterCG) await mkConn(token,boardId,ids[cur.key],ids[afterCG.key],(100-cgPct)+'%');
+          cc+=3; i++;
+        } else {
+          await mkConn(token,boardId,ids[cur.key],ids[nxt.key],'No');
+          cc+=2;
+        }
+      } else if(nxt&&nxt.isCG){
+        const afterCG=connNodes[i+2];
+        const cgPct=nxt.pct||20;
+        await mkConn(token,boardId,ids[cur.key],ids[nxt.key],cgPct+'% CG');
+        if(afterCG) await mkConn(token,boardId,ids[cur.key],ids[afterCG.key],(100-cgPct)+'%');
+        cc+=2; i++;
+      } else if(!cur.isCG){
+        await mkConn(token,boardId,ids[cur.key],ids[nxt.key],'');
+        cc++;
+      }
+    }
+    // CG → exit circles
+    for(const n of allNodes.filter(n=>n.isCGExit)){
+      if(ids[n.parentCG]&&ids[n.key]){await mkConn(token,boardId,ids[n.parentCG],ids[n.key],'');cc++;}
+    }
+    // Re-enter dashed arrow - routes below the flow via bottom snap points
+    if(reEnter&&ids['trigger']&&ids['end']){
+      await fetch(`https://api.miro.com/v2/boards/${encodeURIComponent(boardId)}/connectors`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({
+          startItem:{id:ids['end'],snapTo:'bottom'},
+          endItem:{id:ids['trigger'],snapTo:'bottom'},
+          style:{endStrokeCap:'rounded_stealth',startStrokeCap:'none',strokeColor:'#1A1A1A',strokeWidth:'2.0',strokeStyle:'dashed'},
+          shape:'curved',
+          captions:[{content:`Re-enter in ${reEnterDays} days`,position:'50%'}]
+        })
+      });
+      cc++;
+    }
+    ls('s2','done',`${cc} arrows connected`);
+    banner('ok',`<strong>${campaignName}</strong> generated. Open your Miro board — the flow is ready.`);
+  }catch(err){
+    const active=['s1','s2'].find(s=>document.getElementById(s).className.includes('active'));
+    if(active)ls(active,'error',err.message);
+    banner('err',`<strong>Something went wrong:</strong> ${err.message}`);
+  }
+  document.getElementById('genBtn').disabled=false;
+}
+</script>
+
+</body>
+</html>
