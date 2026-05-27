@@ -36,6 +36,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f6;min-height:100v
 .add-btn.decision{border-color:#ff31ac;color:#6b0044;background:#ffe5f3}
 .add-btn.cg{border-color:#4a9aaa;color:#024a56;background:#e0f4f7}
 .add-btn.clock{border-color:#888;color:#333;background:#f5f5f5}
+.add-btn.telesales{border-color:#6b7aad;color:#2b3478;background:#eef0fa}
 .steps-list{display:flex;flex-direction:column;gap:8px;min-height:56px}
 .empty-state{text-align:center;padding:1.5rem;color:#ccc;font-size:13px;border:1.5px dashed #e5e7eb;border-radius:10px}
 .step-card{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:10px;border:1.5px solid;cursor:default}
@@ -51,6 +52,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f6;min-height:100v
 .cg .step-badge{background:#4a9aaa;color:#fff}
 .step-card.clock{border-color:#aaa;background:#f9f9f9}
 .clock .step-badge{background:#888;color:#fff}
+.step-card.telesales{border-color:#6b7aad;background:#f0f2fc}
+.telesales .step-badge{background:#6b7aad;color:#fff}
 .step-num{font-size:11px;font-weight:600;color:#bbb;min-width:18px;text-align:right}
 .step-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;min-width:68px;text-align:center;white-space:nowrap}
 .wait .step-badge{background:#8ec63e;color:#1a3008}
@@ -183,18 +186,20 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f0f4f6;min-height:100v
       <div class="leg"><div class="leg-dot" style="background:#00c0c9"></div>Push</div>
       <div class="leg"><div class="leg-dot" style="background:#04d396"></div>SMS</div>
       <div class="leg"><div class="leg-dot" style="background:#1fc3f3"></div>Email</div>
+      <div class="leg"><div class="leg-dot" style="background:#6b7aad"></div>Telesales</div>
       <div class="leg"><div class="leg-dot" style="background:#888"></div>Clock window</div>
       <div class="leg"><div class="leg-dot" style="background:#4a9aaa"></div>CG (splits traffic)</div>
       <div class="leg"><div class="leg-dot" style="background:#024a56"></div>End (auto)</div>
     </div>
     <div class="step-btns">
-      <button class="add-btn wait"     onclick="addStep('wait')">+ Wait</button>
-      <button class="add-btn clock"    onclick="addStep('clock')">+ Clock</button>
-      <button class="add-btn push"     onclick="addStep('push')">+ Push</button>
-      <button class="add-btn sms"      onclick="addStep('sms')">+ SMS</button>
-      <button class="add-btn email"    onclick="addStep('email')">+ Email</button>
-      <button class="add-btn decision" onclick="addStep('decision')">+ Decision</button>
-      <button class="add-btn cg"       onclick="addStep('cg')">+ CG</button>
+      <button class="add-btn wait"      onclick="addStep('wait')">+ Wait</button>
+      <button class="add-btn clock"     onclick="addStep('clock')">+ Clock</button>
+      <button class="add-btn telesales" onclick="addStep('telesales')">+ Telesales</button>
+      <button class="add-btn push"      onclick="addStep('push')">+ Push</button>
+      <button class="add-btn sms"       onclick="addStep('sms')">+ SMS</button>
+      <button class="add-btn email"     onclick="addStep('email')">+ Email</button>
+      <button class="add-btn decision"  onclick="addStep('decision')">+ Decision</button>
+      <button class="add-btn cg"        onclick="addStep('cg')">+ CG</button>
     </div>
     <div class="steps-list" id="stepsList">
       <div class="empty-state">Add steps above to build your campaign flow</div>
@@ -237,8 +242,8 @@ function copyToClipboard(btn,text){
   navigator.clipboard.writeText(text).then(()=>{const o=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,2000);});
 }
 
-const PLACEHOLDERS={wait:'e.g. Wait 1 day',clock:'e.g. 10:00 – 20:00',push:'e.g. Push #1',sms:'e.g. SMS #1',email:'e.g. Email #1',decision:'e.g. Application completed? (Yes = exit)',cg:'CG label (optional)'};
-const TYPE_LABELS={wait:'Wait',clock:'Clock',push:'Push',sms:'SMS',email:'Email',decision:'Decision',cg:'CG'};
+const PLACEHOLDERS={wait:'e.g. Wait 1 day',clock:'e.g. 10:00 – 20:00',telesales:'e.g. Telesales call #1',push:'e.g. Push #1',sms:'e.g. SMS #1',email:'e.g. Email #1',decision:'e.g. Application completed? (Yes = exit)',cg:'CG label (optional)'};
+const TYPE_LABELS={wait:'Wait',clock:'Clock',telesales:'Telesales',push:'Push',sms:'SMS',email:'Email',decision:'Decision',cg:'CG'};
 let steps=[],stepCounter=0,dragId=null;
 
 function addStep(type){steps.push({id:++stepCounter,type,label:'',text:'',pct:20});renderSteps();}
@@ -292,11 +297,11 @@ const SVGS={
   push:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95 60"><rect x="5" y="5" width="85" height="50" rx="9" fill="${T}" stroke="${TD}" stroke-width="2"/></svg>`,
   sms:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95 80"><rect x="5" y="4" width="85" height="54" rx="9" fill="${T}" stroke="${TD}" stroke-width="2"/><polygon points="14,56 5,76 36,56" fill="${T}" stroke="${TD}" stroke-width="2" stroke-linejoin="round"/></svg>`,
   email:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95 72"><rect x="4" y="4" width="87" height="64" rx="4" fill="${T}" stroke="${TD}" stroke-width="2"/><polyline points="4,7 47.5,40 91,7" fill="none" stroke="${TD}" stroke-width="2.5" stroke-linejoin="round"/></svg>`,
-  cg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 80"><rect x="18" y="8" width="104" height="64" fill="${T}" stroke="none"/><line x1="18" y1="8" x2="122" y2="8" stroke="${TD}" stroke-width="2"/><line x1="18" y1="72" x2="122" y2="72" stroke="${TD}" stroke-width="2"/><ellipse cx="18" cy="40" rx="14" ry="32" fill="#7ab8bf" stroke="${TD}" stroke-width="2"/><ellipse cx="122" cy="40" rx="14" ry="32" fill="${T}" stroke="${TD}" stroke-width="2"/></svg>`,
+  telesales:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="#eef0fa" stroke="#6b7aad" stroke-width="2"/><path d="M27,24 c0,0 3,1 5,5 l2,4 c0.5,1 0,2-1,3 l-2,2 c-1,1-1,2 0,3 c2,3 5,6 8,8 c1,1 2,1 3,0 l2-2 c1-1 2-1.5 3-1 l4,2 c4,2 5,5 5,5 c1,4-3,8-7,7 c-8-2-20-14-22-22 C25,21 24,24 27,24 Z" fill="#6b7aad" stroke="none"/></svg>`,<rect x="18" y="8" width="104" height="64" fill="${T}" stroke="none"/><line x1="18" y1="8" x2="122" y2="8" stroke="${TD}" stroke-width="2"/><line x1="18" y1="72" x2="122" y2="72" stroke="${TD}" stroke-width="2"/><ellipse cx="18" cy="40" rx="14" ry="32" fill="#7ab8bf" stroke="${TD}" stroke-width="2"/><ellipse cx="122" cy="40" rx="14" ry="32" fill="${T}" stroke="${TD}" stroke-width="2"/></svg>`,
 };
 
 const DIMS={
-  trigger:{w:80,h:95}, wait:{w:70,h:88}, clock:{w:80,h:80},
+  trigger:{w:80,h:95}, wait:{w:70,h:88}, clock:{w:80,h:80}, telesales:{w:80,h:80},
   push:{w:95,h:60}, sms:{w:95,h:80}, email:{w:95,h:72},
   cg:{w:140,h:80}, decision:{w:160,h:100},
 };
